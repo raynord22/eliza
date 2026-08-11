@@ -571,8 +571,18 @@ export function resolveActiveChat(
   if (provider === undefined || family === undefined) return null;
   const baseFor = (key: string): string | undefined =>
     resolveEffective(config, processEnv, key)?.value;
-  const endpoint =
-    family === "ELIZAOS_CLOUD"
+  const openAiBase = baseFor("OPENAI_BASE_URL");
+  const cerebrasMode =
+    provider === "cerebras" &&
+    (baseFor("ELIZA_PROVIDER")?.toLowerCase() === "cerebras" ||
+      (openAiBase !== undefined &&
+        /(^|\.)cerebras\.ai(\/|$)/i.test(openAiBase)) ||
+      (baseFor("CEREBRAS_API_KEY") !== undefined &&
+        baseFor("OPENAI_API_KEY") === undefined &&
+        openAiBase === undefined));
+  const endpoint = cerebrasMode
+    ? (hostOf(openAiBase ?? baseFor("CEREBRAS_BASE_URL")) ?? "api.cerebras.ai")
+    : family === "ELIZAOS_CLOUD"
       ? (hostOf(baseFor("ELIZAOS_CLOUD_BASE_URL")) ?? "elizacloud.ai")
       : family === "ANTHROPIC"
         ? (hostOf(baseFor("ANTHROPIC_BASE_URL")) ?? "api.anthropic.com")

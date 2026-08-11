@@ -546,6 +546,15 @@ describe("GET /api/models/config activeChat", () => {
       },
     },
   } as never;
+  const directCerebrasConfig = {
+    serviceRouting: {
+      llmText: {
+        backend: "cerebras",
+        transport: "direct",
+        accountId: "cerebras",
+      },
+    },
+  } as never;
 
   it("names the cloud brain + its endpoint under cloud-proxy routing", async () => {
     const { ctx, json } = makeHarness("GET", null, {
@@ -581,16 +590,11 @@ describe("GET /api/models/config activeChat", () => {
 
   it("names the direct provider endpoint under cerebras routing and omits cloud defaults", async () => {
     const { ctx, json } = makeHarness("GET", null, {
-      config: {
-        serviceRouting: {
-          llmText: {
-            backend: "cerebras",
-            transport: "direct",
-            accountId: "cerebras",
-          },
-        },
-      } as never,
-      processEnv: { OPENAI_BASE_URL: "https://api.cerebras.ai/v1" },
+      config: directCerebrasConfig,
+      processEnv: {
+        OPENAI_BASE_URL: "https://api.cerebras.ai/v1",
+        CEREBRAS_BASE_URL: "https://unused.example/v1",
+      },
     });
     await handleModelConfigRoutes(ctx as never);
     const { body } = responseOf(json);
@@ -605,6 +609,51 @@ describe("GET /api/models/config activeChat", () => {
     >;
     expect(targets.small?.ELIZAOS_CLOUD_SMALL_MODEL).toBeNull();
     expect(targets.large?.ELIZAOS_CLOUD_LARGE_MODEL).toBeNull();
+  });
+
+  it("reports the canonical Cerebras endpoint when no base override exists", async () => {
+    const { ctx, json } = makeHarness("GET", null, {
+      config: directCerebrasConfig,
+      processEnv: { CEREBRAS_API_KEY: "cerebras-test-key" },
+    });
+    await handleModelConfigRoutes(ctx as never);
+    expect(responseOf(json).body.activeChat).toEqual({
+      provider: "cerebras",
+      family: "OPENAI",
+      endpoint: "api.cerebras.ai",
+    });
+  });
+
+  it("reports a configured Cerebras base when the OpenAI compatibility base is absent", async () => {
+    const { ctx, json } = makeHarness("GET", null, {
+      config: directCerebrasConfig,
+      processEnv: {
+        CEREBRAS_API_KEY: "cerebras-test-key",
+        CEREBRAS_BASE_URL: "https://private.cerebras.example/v1",
+      },
+    });
+    await handleModelConfigRoutes(ctx as never);
+    expect(responseOf(json).body.activeChat).toEqual({
+      provider: "cerebras",
+      family: "OPENAI",
+      endpoint: "private.cerebras.example",
+    });
+  });
+
+  it("retains the OpenAI endpoint when preserved provider keys keep the plugin out of Cerebras mode", async () => {
+    const { ctx, json } = makeHarness("GET", null, {
+      config: directCerebrasConfig,
+      processEnv: {
+        CEREBRAS_API_KEY: "cerebras-test-key",
+        OPENAI_API_KEY: "openai-test-key",
+      },
+    });
+    await handleModelConfigRoutes(ctx as never);
+    expect(responseOf(json).body.activeChat).toEqual({
+      provider: "cerebras",
+      family: "OPENAI",
+      endpoint: "api.openai.com",
+    });
   });
 
   it("omits activeChat when no routing is configured", async () => {

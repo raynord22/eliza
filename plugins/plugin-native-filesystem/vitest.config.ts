@@ -3,11 +3,21 @@
  * conditions (for `@elizaos/core`'s dual ESM/CJS entry points) and inlines it into
  * the SSR module graph so the forked-pool transform can process the workspace package.
  */
+
+import { fileURLToPath } from "node:url";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
 	resolve: {
 		conditions: ["node"],
+		alias: [
+			{
+				find: /^@elizaos\/core\/client-public$/,
+				replacement: fileURLToPath(
+					new URL("../../packages/core/src/client-public.ts", import.meta.url),
+				),
+			},
+		],
 	},
 	ssr: {
 		resolve: {

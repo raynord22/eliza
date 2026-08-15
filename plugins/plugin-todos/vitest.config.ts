@@ -2,6 +2,8 @@
  * Vitest configuration for todos action, provider, and view tests with Node
  * resolution conditions.
  */
+
+import { fileURLToPath } from "node:url";
 import { defineConfig } from "vitest/config";
 import baseConfig from "../../packages/scripts/vitest/default.config";
 
@@ -13,7 +15,15 @@ export default defineConfig({
   resolve: {
     ...baseConfig.resolve,
     conditions: ["node"],
-    alias: baseAliases,
+    alias: [
+      {
+        find: /^@elizaos\/core\/client-public$/,
+        replacement: fileURLToPath(
+          new URL("../../packages/core/src/client-public.ts", import.meta.url),
+        ),
+      },
+      ...baseAliases,
+    ],
   },
   ssr: {
     resolve: {

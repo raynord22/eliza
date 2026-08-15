@@ -9,6 +9,9 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
 	resolve: {
 		alias: {
+			"@elizaos/core/client-public": fileURLToPath(
+				new URL("../../packages/core/src/client-public.ts", import.meta.url),
+			),
 			"@elizaos/core": fileURLToPath(
 				new URL("../../packages/core/src/index.node.ts", import.meta.url),
 			),

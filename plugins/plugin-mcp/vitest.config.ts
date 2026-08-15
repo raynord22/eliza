@@ -17,6 +17,10 @@ export default defineConfig({
         replacement: path.resolve(rootDir, "../../packages/core/src/security/mcp-server-config.ts"),
       },
       {
+        find: "@elizaos/core/client-public",
+        replacement: path.resolve(rootDir, "../../packages/core/src/client-public.ts"),
+      },
+      {
         find: "@elizaos/core",
         replacement: path.resolve(rootDir, "../../packages/core/src/index.node.ts"),
       },

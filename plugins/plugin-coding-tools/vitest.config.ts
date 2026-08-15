@@ -10,6 +10,10 @@ export default defineConfig({
   resolve: {
     alias: [
       {
+        find: /^@elizaos\/core\/client-public$/,
+        replacement: path.join(repoRoot, "packages/core/src/client-public.ts"),
+      },
+      {
         find: /^@elizaos\/core$/,
         replacement: path.join(repoRoot, "packages/core/src/index.node.ts"),
       },

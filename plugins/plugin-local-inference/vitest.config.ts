@@ -11,6 +11,9 @@ export default defineConfig({
 	resolve: {
 		extensions: [".ts", ".tsx", ".mts", ".js", ".mjs", ".json"],
 		alias: {
+			"@elizaos/core/client-public": fileURLToPath(
+				new URL("../../packages/core/src/client-public.ts", import.meta.url),
+			),
 			"@elizaos/core": fileURLToPath(
 				new URL("../../packages/core/src/index.node.ts", import.meta.url),
 			),

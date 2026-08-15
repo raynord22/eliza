@@ -150,6 +150,10 @@ export default defineConfig({
 				replacement: path.join(sharedSrc, "index.ts"),
 			},
 			{
+				find: "@elizaos/core/client-public",
+				replacement: path.join(coreSrc, "client-public.ts"),
+			},
+			{
 				find: /^@elizaos\/core\/(.*)\.js$/,
 				replacement: path.join(coreSrc, "$1.ts"),
 			},
